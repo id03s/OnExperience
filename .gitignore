@@ -1,0 +1,16 @@
+# 빌드 폴더
+build/
+
+# 의존성 모듈
+node_modules/
+
+# 환경 변수
+.env
+
+# 로그 파일
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 시스템 파일
+.DS_Store
