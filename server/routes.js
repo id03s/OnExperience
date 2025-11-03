@@ -53,7 +53,25 @@ router.post('/', (req, res) => {
     isComplete ? 1 : 0
   ], function (err) {
     if (err) return res.status(500).json(err);
-    res.json({ id: this.lastID });
+    res.json({ id: this.lastID }); // 새로 생성된 id 반환
+  });
+});
+
+// ✅ DELETE 리뷰 삭제
+router.delete('/:id', (req, res) => {
+  const { id } = req.params;
+  console.log('🗑️ DELETE 요청 id:', id); // 로그 확인용
+
+  db.run('DELETE FROM reviews WHERE id = ?', id, function (err) {
+    if (err) {
+      console.error('DB 삭제 에러:', err);
+      return res.status(500).json(err);
+    }
+    console.log('DB 삭제 결과 changes:', this.changes);
+    if (this.changes === 0) {
+      return res.status(404).json({ message: '리뷰를 찾을 수 없습니다.' });
+    }
+    res.json({ deletedId: id });
   });
 });
 

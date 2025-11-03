@@ -37,7 +37,10 @@ const KakaoMap = ({ records = [] }) => {
         if (record.address) {
           geocoder.addressSearch(record.address, (result, status) => {
             if (status === window.kakao.maps.services.Status.OK) {
-              const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
+              const coords = new window.kakao.maps.LatLng(
+                result[0].y,
+                result[0].x
+              );
 
               const marker = new window.kakao.maps.Marker({
                 map,
@@ -45,7 +48,7 @@ const KakaoMap = ({ records = [] }) => {
               });
 
               const infowindow = new window.kakao.maps.InfoWindow({
-                content: `<div style="font-size:12px;">${record.store}</div>`,
+                content: `<div style="font-size:12px;">${record.place}</div>`,
               });
 
               marker.addListener("click", () => {
@@ -72,4 +75,3 @@ const KakaoMap = ({ records = [] }) => {
 };
 
 export default KakaoMap;
-
