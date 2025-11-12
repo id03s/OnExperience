@@ -1,4 +1,5 @@
 // server/detect/make-signature.js
+//스폰서배너 인식 기록된거 저장
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');

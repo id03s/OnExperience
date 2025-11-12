@@ -1,3 +1,4 @@
+//경로:src->컴포넌트 오토클래시퍼
 import React, { useState } from 'react';
 
 const API = 'http://localhost:4000/api/analyze';
@@ -6,7 +7,7 @@ export default function AutoClassifier() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(''); 
 
   const handleAnalyze = async () => {
     setLoading(true);

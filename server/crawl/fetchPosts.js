@@ -1,3 +1,4 @@
+//서버/크룰/빼치포스트
 const axios = require('axios');
 const cheerio = require('cheerio');
 

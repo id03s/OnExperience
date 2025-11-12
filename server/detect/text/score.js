@@ -1,6 +1,7 @@
 // server/detect/lib/candidates.js
 
 // 버튼/아이콘/작은 이미지 등 배너 후보 제외
+//배너 크기 스폰스배너 링크인식
 const BAD = [
   'btn_', 'button', 'sprite', 'icon', 'favicon', 'download',
   'spblog', 'emoticon', 'logo', 'menu', 'arrow', 'banner_small'

@@ -1,19 +1,20 @@
 import React, { useEffect } from "react";
 
+//지도를 나타내기 위해 카카로 api를 사용했습니다
 const KakaoMap = ({ records = [] }) => {
   useEffect(() => {
-    // 이미 kakao 스크립트가 로딩되어 있는 경우, 중복 로딩 방지
+    //이미 kakao 스크립트가 로딩되어 있는 경우, 중복 로딩 방지
     if (window.kakao && window.kakao.maps) {
       loadMap();
     } else {
       const script = document.createElement("script");
       script.src =
         "//dapi.kakao.com/v2/maps/sdk.js?appkey=cca675112191f29282761d3066b280e1&autoload=false&libraries=services";
-      script.async = true;
+      script.async = true; //api키
 
       script.onload = () => {
         window.kakao.maps.load(loadMap);
-      };
+      }
 
       document.head.appendChild(script);
     }
@@ -23,10 +24,10 @@ const KakaoMap = ({ records = [] }) => {
       if (!container) {
         console.error("❌ 'map' DOM 요소가 존재하지 않습니다.");
         return;
-      }
+      } //주소를 정확하게 입력해야함
 
       const options = {
-        center: new window.kakao.maps.LatLng(36.0, 127.5), // 전국 중심 좌표
+        center: new window.kakao.maps.LatLng(36.0, 127.5), //한국 중심 좌표
         level: 12,
       };
 
@@ -71,7 +72,7 @@ const KakaoMap = ({ records = [] }) => {
         style={{ width: "100%", height: "400px", border: "1px solid #ccc" }}
       ></div>
     </div>
-  );
-};
+  )
+}; //지도로 나타내는 코드
 
 export default KakaoMap;

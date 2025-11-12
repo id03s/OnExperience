@@ -1,4 +1,5 @@
 // src/components/Login.jsx
+//로그인파일 임시 데모파일
 import React, { useState } from 'react';   // ⬅️ React 명시적으로 import!
 
 export default function Login({ onDone }) {
@@ -10,7 +11,7 @@ export default function Login({ onDone }) {
 
   const submitLogin = (e) => {
     e.preventDefault();
-    onDone?.(); // 데모: 실제 인증 없음
+    onDone?.(); //현재는 인증없음
   };
 
   const submitSignup = (e) => {
@@ -20,7 +21,7 @@ export default function Login({ onDone }) {
     try {
       localStorage.setItem('demoUser', JSON.stringify({ name, email }));
     } catch {}
-    onDone?.(); // 데모: 회원가입 후 바로 입장
+    onDone?.(); // 데모: 회원가입 후 바로 입음
   };
 
   return (

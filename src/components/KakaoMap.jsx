@@ -1,7 +1,8 @@
 // src/components/KakaoMap.jsx
+//카카오맵 창 (api랑은 다릅니다)
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
-/* ====== Inline CSS (가벼운 글래스 UI) ====== */
+//css파일
 const KM_STYLE_ID = "km-inline-style-v2";
 const kmCSS = `
 .km{position:relative;width:100%;min-height:520px;border:1px solid rgba(15,23,42,.08);border-radius:18px;box-shadow:0 10px 24px rgba(28,31,55,.08);overflow:hidden;background:linear-gradient(120deg,#eef2ff,#fff 40%,#fff0ff)}
@@ -16,7 +17,7 @@ const kmCSS = `
 .km-loader{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:4;padding:10px 14px;border-radius:12px;background:#111827;color:#fff;font-weight:800;box-shadow:0 10px 24px rgba(0,0,0,.2)}
 `;
 
-/* ====== 유틸 ====== */
+//유틸리티
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const escapeHtml = (s = "") =>
   String(s).replace(/[&<>"']/g, (m) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
@@ -26,7 +27,7 @@ const num = (v) => {
   return isNaN(n) ? "0" : n.toLocaleString();
 };
 
-/** 레코드 배열 → 주소 기준 유니크 + 의미 없는 값 제거 */
+//레코드 배열->주소 기준 유니크+의미 없는 값 제거
 function uniqByAddress(records = []) {
   const map = new Map();
   for (const r of records) {
@@ -37,12 +38,12 @@ function uniqByAddress(records = []) {
   return Array.from(map.values());
 }
 
-/** 주소 목록 시그니처 (데이터 변화 감지) */
+//주소목록시그니처
 function signature(list) {
   return JSON.stringify(list.map((r) => r.address).sort());
 }
 
-/** localStorage 캐시 */
+//로컬캐시
 const LS_PREFIX = "km_geo:";
 const getLS = (addr) => {
   try { return JSON.parse(localStorage.getItem(LS_PREFIX + addr) || "null"); } catch { return null; }
@@ -53,7 +54,7 @@ const setLS = (addr, ll) => {
 
 export default function KakaoMap({
   records = [],
-  appkey = "eb46d70dcce4c3347f6e67a7afcfa896",
+  appkey = "eb46d70dcce4c3347f6e67a7afcfa896", //api키
   maxConcurrency = 5,        // 동시 지오코딩 개수
   stepDelay = 40,            // 각 요청 사이 지연(ms)
   clusterThreshold = 80,     // 이 개수 이상이면 클러스터 사용
@@ -75,7 +76,7 @@ export default function KakaoMap({
   const markersRef = useRef([]);
   const infoRef = useRef(null);
 
-  // 지오코딩 캐시(세션 동안 유지)
+  //지오코딩 캐시(세션 동안 유지)
   const geoCache = useRef(new Map());
   const [ready, setReady] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -85,12 +86,14 @@ export default function KakaoMap({
   const items = useMemo(() => uniqByAddress(records), [records]);
   const sig = useMemo(() => signature(items), [items]);
 
-  // SDK 로드 & 기본 객체 준비
+  //SDK 로드와 기본 객체 준비
   useEffect(() => {
     const init = () => {
       if (!containerRef.current) return;
+      //윈도우카카오만허용
       const kakao = window.kakao;
       const map = new kakao.maps.Map(containerRef.current, {
+        //좌표
         center: new kakao.maps.LatLng(36.5, 127.5),
         level: 12,
       });
@@ -111,28 +114,28 @@ export default function KakaoMap({
     }
   }, [appkey]);
 
-  // 메인: 지오코딩 + 마커 추가(성능 최적화)
+  //메인: 지오코딩 + 마커 추가(성능 최적화)
   useEffect(() => {
     if (!ready || !mapRef.current || !geocoderRef.current) return;
 
-    // 데이터 변화 없으면 패스
+    //데이터 변화 없으면 패스
     if (prevSigRef.current === sig) return;
     prevSigRef.current = sig;
 
-    // 이전 작업 무효화
+    //이전 작업 무효화
     const myRun = ++runIdRef.current;
 
     const kakao = window.kakao;
     const map = mapRef.current;
     const geocoder = geocoderRef.current;
 
-    // 정리
+    //정리
     if (clustererRef.current) clustererRef.current.clear();
     markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current = [];
     setLoading(true);
 
-    // 필요한 경우에만 클러스터러 생성
+    //필요한 경우에만 클러스터러 생성
     const useCluster = items.length >= clusterThreshold;
     if (useCluster) {
       clustererRef.current = new kakao.maps.MarkerClusterer({
@@ -146,20 +149,20 @@ export default function KakaoMap({
 
     const bounds = new kakao.maps.LatLngBounds();
 
-    // 지오코딩 함수(캐시 사용)
+    //지오코딩 함수(캐시 사용)
     const geocodeAddress = (addr) =>
       new Promise((resolve) => {
         if (!addr) return resolve(null);
 
-        // 1) 메모리 캐시
+        //1.메모리 캐시
         if (geoCache.current.has(addr)) return resolve(geoCache.current.get(addr));
-        // 2) localStorage
+        //2.localStorage
         const ls = getLS(addr);
         if (ls && typeof ls.lat === "number" && typeof ls.lng === "number") {
           geoCache.current.set(addr, ls);
           return resolve(ls);
         }
-        // 3) API 호출
+        //3.API 호출
         geocoder.addressSearch(addr, (result, status) => {
           if (status === kakao.maps.services.Status.OK && result[0]) {
             const ll = { lat: Number(result[0].y), lng: Number(result[0].x) };
@@ -173,11 +176,12 @@ export default function KakaoMap({
         });
       });
 
-    // 동시성 제한 풀
+    //동시성 제한 풀
     const concurrency = Math.max(1, Math.min(10, maxConcurrency));
     let idx = 0;
     const results = new Array(items.length).fill(null);
 
+    //인식
     const worker = async () => {
       while (idx < items.length && runIdRef.current === myRun) {
         const cur = idx++;
@@ -186,17 +190,17 @@ export default function KakaoMap({
         if (!addr) { results[cur] = null; continue; }
         const ll = await geocodeAddress(addr);
         results[cur] = ll;
-        if (stepDelay) await wait(stepDelay); // 과도한 폭주 방지
+        if (stepDelay > 0) await wait(stepDelay); // 과도한 폭주 방지
       }
     };
 
     (async () => {
-      // 워커 실행
+      //좌표워커실행
       const workers = Array.from({ length: concurrency }, () => worker());
       await Promise.all(workers);
       if (runIdRef.current !== myRun) return; // 최신 실행만 유지
 
-      // 좌표 유효한 것만 선택
+      //좌표 유효한 것만 선택
       const markers = [];
       for (let i = 0; i < items.length; i++) {
         const rec = items[i];
@@ -232,7 +236,7 @@ export default function KakaoMap({
         bounds.extend(pos);
       }
 
-      // 렌더링: 한 번에 추가 → 렉 최소화
+      //렌더링:한 번에 추가->렉 최소화
       if (markers.length) {
         markersRef.current = markers;
         if (clustererRef.current) {
@@ -246,11 +250,11 @@ export default function KakaoMap({
       setLoading(false);
     })();
 
-    // cleanup: 실행 중 다른 데이터가 오면 이전 마커/클러스터 정리는 다음 사이클에서 처리됨
-    // 여기선 별도 return 불필요
+    //cleanup:실행 중 다른 데이터가 오면 이전 마커/클러스터 정리는 다음 사이클에서 처리된니다
+    //여기선 별도 return 불필요
   }, [sig, items, ready, maxConcurrency, stepDelay, clusterThreshold]);
 
-  // 컨트롤
+  //컨트롤기능
   const fitAll = () => {
     const kakao = window.kakao;
     const map = mapRef.current;
@@ -260,6 +264,7 @@ export default function KakaoMap({
     map.setBounds(b);
   };
 
+  //위치못가져왔을경우이마
   const goMyLocation = () => {
     if (!navigator.geolocation || !mapRef.current) return;
     navigator.geolocation.getCurrentPosition(
@@ -272,7 +277,9 @@ export default function KakaoMap({
       () => alert("현재 위치를 가져올 수 없어요.")
     );
   };
+  
 
+  //확대 축소할수있는 기능이아
   return (
     <div className="km">
       <div className="km-top">

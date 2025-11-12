@@ -1,4 +1,5 @@
 // src/pages/WritePage.jsx
+//제일 중심구조
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReviewForm from '../components/ReviewForm';
@@ -6,11 +7,11 @@ import KakaoMap from '../components/KakaoMap';
 import BulkUpload from '../components/BulkUpload';
 import AutoClassifier from '../components/AutoClassifier';
 
-// ★ 백엔드 기준 URL (로컬 개발용)
+// 백엔드 기준 URL (로컬 개발용)
 const API_BASE = 'http://localhost:4000';
 const BASE_URL = `${API_BASE}/api/reviews`;
 
-/* ===== Inline CSS (이 페이지 전용) ===== */
+//css전용 일부러 한곳에 놓았습니다
 const WP_STYLE_ID = "wp-inline-style";
 const wpCSS = `
 .wp { --card: rgba(255,255,255,.92); --border: rgba(15,23,42,.09);
@@ -102,7 +103,7 @@ input[type="checkbox"] { width:16px; height:16px; }
 .wp-topbtn.danger{background:#ef4444; color:#fff; border-color:#ef4444}
 `;
 
-/* ===== 유틸: 스타일 주입 ===== */
+//위에있는 css스타일 주입한거
 function useInjectWPStyle() {
   useEffect(() => {
     if (!document.getElementById(WP_STYLE_ID)) {
@@ -114,29 +115,30 @@ function useInjectWPStyle() {
   }, []);
 }
 
-// 공용 fetch 헬퍼 (에러 본문도 보여주기)
+//핼퍼 텍스트 변환
 async function fetchJson(url, opts) {
-  const res = await fetch(url, opts);
+  const res = await fetch(url, opts); //FATCH 실행
   const text = await res.text();
   if (!res.ok) throw new Error(`HTTP ${res.status} :: ${text.slice(0,200)}`);
   try { return JSON.parse(text); } catch { throw new Error(`Invalid JSON :: ${text.slice(0,200)}`); }
 }
 
-// 숫자/표시 유틸
+//숫자표시 (돈)
+// 쉼표나 공백있을경우 정수로 변환
 const toInt = (x) => {
   const n = parseInt(String(x ?? '').replace(/[, ]/g, ''), 10);
   return Number.isFinite(n) ? n : 0;
 };
 const fmt = (n) => Number(n || 0).toLocaleString();
 
-// 🔑 날짜 파싱 키: 'YYYY-MM-DD' → time, 파싱 실패는 가장 뒤로 정렬되게 -Infinity
+//날짜파싱키
 const dateKey = (v) => {
   const s = (v ?? '').toString().slice(0, 10);
   const t = Date.parse(s);
   return Number.isNaN(t) ? -Infinity : t;
 };
 
-/* ===== 상단바 ===== */
+//임시로그인상단바
 function TopBar() {
   const nav = useNavigate();
   return (
@@ -157,21 +159,21 @@ function WritePage() {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // ✅ 협찬/내돈내산 감지 결과
+  // 협찬, 내돈내산 감지
   // { label: 'sponsored'|'self'|'none'|'' , source?: 'ReviewNote' | ... }
   const [det, setDet] = useState({ label: '', source: '' });
 
-  // ✅ 요약 필터(완료건만)
+  //완료건만 계산되도록
   const [onlyComplete, setOnlyComplete] = useState(false);
 
-  // ✅ 페이징
+  //페이지
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // ✅ 선택삭제
+  //선택해서삭제하기
   const [selected, setSelected] = useState(() => new Set());
 
-  // 리스트 불러오기 (체험일 내림차순)
+  //무조건 내림차순으로 정렬되게하는기능
   const fetchReviews = async () => {
     try {
       setLoading(true);
@@ -191,8 +193,8 @@ function WritePage() {
 
   // 등록
   const handleSubmit = async (reviewData) => {
-    try {
-      await fetchJson(BASE_URL, {
+    try {  //리뷰데이터를 백엔드 API로 JSON 형식으로 보내는 POST요청
+      await fetchJson(BASE_URL, { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reviewData),
@@ -209,6 +211,7 @@ function WritePage() {
   const handleDelete = async (id) => {
     if (!id) return alert("id가 없어서 삭제할 수 없습니다. 새로고침 후 다시 시도하세요.");
     if (!window.confirm('정말 삭제하시겠습니까?')) return;
+    //삭제
     try {
       await fetchJson(`${BASE_URL}/${id}`, { method: 'DELETE' });
       setReviews(prev => prev.filter(r => r.id !== id));
@@ -220,7 +223,7 @@ function WritePage() {
     }
   };
 
-  // 선택 토글
+  //선택 토글
   const toggleOne = (id) => setSelected(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
   const toggleAllOnPage = (idsOnPage) => setSelected(prev => {
     const s = new Set(prev);
@@ -229,12 +232,12 @@ function WritePage() {
     return s;
   });
 
-  // 선택 삭제
+  //선택한 토글 삭제가능
   const handleBulkDelete = async () => {
     const ids = Array.from(selected);
     if (!ids.length) return;
     if (!window.confirm(`선택한 ${ids.length}건을 삭제할까요?`)) return;
-
+  
     let ok = 0, fail = 0;
     for (const id of ids) {
       try { await fetchJson(`${BASE_URL}/${id}`, { method: 'DELETE' }); ok++; }
@@ -244,7 +247,7 @@ function WritePage() {
     alert(`선택 삭제 완료: ${ok}건${fail ? `, 실패 ${fail}건` : ''}`);
   };
 
-  // 요약 계산
+  //요약해서 계산할수있는 기능
   const rowsForCalc = useMemo(
     () => (onlyComplete ? reviews.filter(r => !!r.isComplete) : reviews),
     [reviews, onlyComplete]
@@ -259,7 +262,7 @@ function WritePage() {
     return { count: rowsForCalc.length, sumSupport, sumPayment, sumSaved };
   }, [rowsForCalc]);
 
-  // 페이징
+  //10개씩 보이게 페이징 넘길수있는 기능
   const totalPages = Math.max(1, Math.ceil(reviews.length / pageSize));
   const currentPage = Math.min(page, totalPages);
   const startIdx = (currentPage - 1) * pageSize;
@@ -277,7 +280,7 @@ function WritePage() {
         <TopBar />
 
         <header className="wp-header">
-          <h1 className="wp-title">블로그 체험단 기록 · Write</h1>
+          <h1 className="wp-title">체험단 레코드 · Write</h1>
           <p className="wp-sub">리뷰 등록 → 리스트 확인 → 지도에서 한눈에 보기</p>
         </header>
         
@@ -300,9 +303,9 @@ function WritePage() {
             <AutoDetectBlock apiBase={API_BASE} onDetect={(summary)=>setDet(summary)} />
             <p className="wp-status">링크를 입력하면 협찬인지 내돈내산인지 인지합니다</p>
           </div>
-        </section>
+        </section> {/* 링크를 입력하면 감지함 */}
 
-        {/* 엑셀 일괄등록 */}
+        {/*엑셀 일괄등록*/}
         <section className="wp-card" style={{ marginBottom: 16 }}>
           <div className="wp-card-inner">
             <BulkUpload apiBase={BASE_URL} onDone={fetchReviews} />
@@ -311,7 +314,7 @@ function WritePage() {
 
         
 
-        {/* 폼 */}
+        {/*직접 입력할 수 있는 폼*/}
         <section className="wp-card">
           <div className="wp-card-hd">
             <div className="wp-card-tt">리뷰 작성</div>
@@ -327,7 +330,7 @@ function WritePage() {
 
         <div className="wp-sep" />
 
-        {/* 리스트 */}
+        {/*리스트*/}
         <section className="wp-card">
           <div className="wp-card-hd">
             <div className="wp-card-tt">📋 리뷰 리스트</div>
@@ -463,24 +466,27 @@ function WritePage() {
   );
 }
 
-/* ====== 내부 소형 컴포넌트: 배너 자동 인식 블록 ====== */
+//스폰스배너 인식
 function AutoDetectBlock({ onDetect, apiBase }) {
   const [blogUrl, setBlogUrl] = useState('');
   const [busy, setBusy] = useState(false);
 
-  // 서버 summary 그대로 전달
+  // 서버 summary 그대로 전식
   const applyDetectResult = (json) => {
     const s = json?.summary;
     if (!s) return;
     onDetect?.(s); // {label:'sponsored'|'self'|'none', source?}
   };
-
+   
+  //스폰서배너 유사성 판단
   async function detectByFile(file, threshold = 6) {
     const fd = new FormData();
     fd.append('file', file);
     fd.append('threshold', String(threshold));
     return fetchJson(`${apiBase}/api/detect/banner-file`, { method: 'POST', body: fd });
   }
+
+  //부가설명 체험단 사이트는 고유 배너 링크가 있는데 해당되지 않으면 인식을못함
   async function detectByPage(pageUrl, threshold = 6) {
     return fetchJson(`${apiBase}/api/detect/from-page`, {
       method: 'POST',
@@ -488,7 +494,7 @@ function AutoDetectBlock({ onDetect, apiBase }) {
       body: JSON.stringify({ url: pageUrl, threshold }),
     });
   }
-
+  //스폰서링크가 맞지 않으면 이렇게뜬다
   const runFile = async (f) => {
     if (!f) return;
     setBusy(true);
@@ -496,7 +502,7 @@ function AutoDetectBlock({ onDetect, apiBase }) {
     catch (e) { console.error(e); alert('배너 인식 실패: ' + e.message); }
     finally { setBusy(false); }
   };
-
+  //인식실패
   const runBlog = async () => {
     if (!blogUrl.trim()) return;
     setBusy(true);
@@ -505,11 +511,14 @@ function AutoDetectBlock({ onDetect, apiBase }) {
     finally { setBusy(false); }
   };
 
+  //블로그 링크인식
+
   return (
     <div style={{ display:'grid', gap:10 }}>
-      
+      다다
+    
 
-      {/* 블로그 링크 인식 */}
+      {/*네이버 블로그 링크 인식*/}
       <div style={{ display:'flex', gap:8 }}>
         <input
           placeholder="블로그 글 URL (예: https://blog.naver.com/...)"

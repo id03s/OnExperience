@@ -1,4 +1,5 @@
 // src/components/BulkUpload.jsx
+//엑셀업로드
 import React, { useRef, useState, useMemo } from 'react';
 import * as XLSX from 'xlsx';
 
@@ -7,9 +8,9 @@ export default function BulkUpload({ apiBase, onDone }) {
   const [fileName, setFileName] = useState('');
   const [preview, setPreview] = useState([]);
   const [status, setStatus] = useState('');
-  const [onlyComplete, setOnlyComplete] = useState(false); // ✅ 계산기 필터
+  const [onlyComplete, setOnlyComplete] = useState(false); // 계산기 필터
 
-  // ========== 공통 유틸 ==========
+  // 엑셀유틸
   const toInt = (x) => {
     const n = parseInt(String(x ?? '').replace(/[, ]/g, ''), 10);
     return Number.isFinite(n) ? n : 0;
@@ -46,7 +47,7 @@ export default function BulkUpload({ apiBase, onDone }) {
     parseExcel(f);
   };
 
-  // 엑셀 날짜(일련값) -> YYYY-MM-DD
+  //엑셀날짜값
   const excelDateToISO = (v) => {
     if (typeof v === 'number') {
       const d = XLSX.SSF.parse_date_code(v);
@@ -61,7 +62,8 @@ export default function BulkUpload({ apiBase, onDone }) {
     return s.substring(0, 10);
   };
 
-  // ✅ SiteName 포함, 다양한 한/영 변형 허용
+  //SiteName 포함하여 한국,영어로 변경 
+  //기존 엑셀로 기록하는 사람들을 위해 바꾼기능
   const normalizeRow = (r = {}) => {
     const toBool = (x) => /^(true|1|y|yes|완료)$/i.test(String(x).trim());
     return {
@@ -120,21 +122,23 @@ export default function BulkUpload({ apiBase, onDone }) {
     }
   };
 
-  // ✅ 템플릿 다운로드 (서버에서 바로 내려받기)
+  // 템플릿 다운로드 (서버에서 바로 내려받기)
+  //문제있을시 서버로 다운받을수있게
+  // 이건 엑셀파일입니다
   const downloadUrl = 'http://localhost:4000/api/template/reviews-bulk';
 
   return (
     <section className="wp-card">
       <div className="wp-card-hd">
         <div className="wp-card-tt">엑셀 일괄등록</div>
-        {/* ✅ 클릭 시 브라우저 다운로드 폴더에 저장 */}
+        {/* 클릭 시 브라우저 다운로드 폴더에 저장 */}
         <a className="wp-btn" href={downloadUrl}>
           템플릿 받기
         </a>
       </div>
 
       <div className="wp-card-inner">
-        {/* 파일 입력 */}
+        {/*파일 입력*/}
         <input
           ref={fileRef}
           type="file"
@@ -144,7 +148,7 @@ export default function BulkUpload({ apiBase, onDone }) {
           aria-hidden="true"
         />
 
-        {/* 계산기 블록 */}
+        {/*계산기 블록 파일*/}
         {normalizedRows.length > 0 && (
           <div className="wp-card" style={{ marginBottom: 12 }}>
             <div className="wp-card-hd">
@@ -181,7 +185,7 @@ export default function BulkUpload({ apiBase, onDone }) {
           </div>
         )}
 
-        {/* 액션 */}
+        {/*액션*/}
         <div className="wp-actions">
           <button className="wp-btn" onClick={handlePick}>파일 선택</button>
           <button className="wp-btn grad" onClick={handleUpload}>업로드</button>

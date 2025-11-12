@@ -3,8 +3,8 @@ const router = express.Router();
 const sqlite3 = require('sqlite3').verbose();
 const fs = require('fs');
 const path = require('path');
-
-// db 경로 설정
+//서버에있는 리뷰삭제
+//db 경로 설정
 const dbDir = path.join(__dirname, 'db');
 const dbPath = path.join(dbDir, 'reviews.db');
 
@@ -57,7 +57,7 @@ router.post('/', (req, res) => {
   });
 });
 
-// ✅ DELETE 리뷰 삭제
+// DELETE 리뷰 삭제
 router.delete('/:id', (req, res) => {
   const { id } = req.params;
   console.log('🗑️ DELETE 요청 id:', id); // 로그 확인용

@@ -73,7 +73,7 @@ const rfCSS = `
 @keyframes rf-toast-in { from{opacity:0; transform: translateY(-6px)} to{opacity:1; transform:none} }
 `;
 
-// ✅ detectedPlatform을 받아 자동으로 siteName 채워줍니다.
+//detectedPlatform을 받아 자동으로 siteName 채워줍니다.
 export default function ReviewForm({ onSubmit, detectedPlatform = '' }) {
   /* CSS 주입 */
   useEffect(() => {
@@ -85,9 +85,9 @@ export default function ReviewForm({ onSubmit, detectedPlatform = '' }) {
     }
   }, []);
 
-  /* ===== 2) 상태/유틸 ===== */
+  //상태유틸
   const [form, setForm] = useState({
-    siteName: detectedPlatform || "",   // ✅ 초기값에 적용
+    siteName: detectedPlatform || "",   //초기값에 적용
     place: "",
     address: "",
     category: "",
@@ -99,7 +99,7 @@ export default function ReviewForm({ onSubmit, detectedPlatform = '' }) {
     isComplete: false,
   });
 
-  // ✅ detectedPlatform이 바뀌면 입력칸에 반영
+  //detectedPlatform이 바뀌면 입력칸에 반영
   useEffect(() => {
     if (detectedPlatform && detectedPlatform !== form.siteName) {
       setForm((p) => ({ ...p, siteName: detectedPlatform }));

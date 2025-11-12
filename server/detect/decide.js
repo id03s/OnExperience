@@ -1,7 +1,7 @@
-// server/detect/decide.js
+//server/detect/decide.js
 
-// banner: { matched, name, dist, _isBannerCandidate }
-// text: { S, P }
+//banner: { matched, name, dist, _isBannerCandidate }
+//text: { S, P }
 exports.decide = (banner, text) => {
   // 텍스트가 강하게 "내돈내산"이면 무조건 self
   if (text.P >= text.S + 2) return { label: 'self' };

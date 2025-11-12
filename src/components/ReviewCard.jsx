@@ -1,4 +1,5 @@
 // src/components/ReviewCard.jsx
+//리뷰저장
 import React, { useEffect } from "react";
 
 const RC_STYLE_ID = "rc-inline-style";
@@ -94,7 +95,8 @@ export default function ReviewCard({ review }) {
       <div className="rc-badges">
         {category && <span className="rc-badge grad">{category}</span>}
         {menuType && <span className="rc-badge">{menuType}</span>}
-      </div>
+      </div> 
+
 
       <div className="rc-money">
         <span className="rc-chip">
@@ -127,16 +129,3 @@ export default function ReviewCard({ review }) {
     </div>
   );
 }
-
-/* 선택: 카드 그리드로 여러 개 뿌리고 싶으면 아래 보조 컴포넌트도 같이 사용
-export function ReviewGrid({ reviews = [] }) {
-  useInjectStyle();
-  return (
-    <div className="rc rc-grid">
-      {reviews.map((rv) => (
-        <ReviewCard key={rv.id || rv.blogLink || rv.place} review={rv} />
-      ))}
-    </div>
-  );
-}
-*/

@@ -1,4 +1,5 @@
 // server/detect/banner.js
+//스폰서배너 크기 조절
 const axios = require('axios');
 const sharp = require('sharp');
 const fs = require('fs');
@@ -12,7 +13,7 @@ try {
   SIGNATURES = [];
 }
 
-// ── helpers ─────────────────────────────────────────────────────
+// 스폰서배너가 어느위치에 있는지 인식하는 기능
 function parseRegion(region, meta) {
   if (!region || region === 'whole') return { left:0, top:0, width:meta.width, height:meta.height };
   if (region === 'left')   return { left:0, top:0, width:Math.floor(meta.width*0.5), height:meta.height };
@@ -90,7 +91,7 @@ async function detectSponsorByImages(imageUrls = [], opts = {}) {
   return { winner, details: out };
 }
 
-// 파일 업로드/버퍼 판별용
+//파일 업로드/버퍼 판별용
 async function detectFromBuffer(buf, threshold = 10) {
   const { best } = await compareWithSignatures(buf, threshold);
   return best || null;

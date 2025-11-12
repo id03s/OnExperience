@@ -14,7 +14,7 @@ const router = express.Router();
 const upload = multer({ limits: { fileSize: 5 * 1024 * 1024 } });
 const SIGN_PATH = path.resolve(__dirname, '..', 'detect', 'signatures.json');
 
-/* -------------------- 공통 유틸 -------------------- */
+/* 공통 유틸*/
 function safeReferer(u) {
   try { const p = new URL(u); return p.origin + p.pathname; }
   catch { return undefined; }
@@ -62,7 +62,7 @@ function loadSigns() {
   catch { return []; }
 }
 
-/* -------------------- 배너 후보/텍스트 스코어러 -------------------- */
+/* 배너 후보/텍스트 스코어러*/
 const BAD_SNIPPETS = [
   'btn_', 'button', 'sprite', 'icon', 'favicon', 'download', 'spblog',
   'emoticon', 'logo', 'menu', 'arrow', 'banner_small', 'mylog/post/btn', 'download2'
@@ -104,7 +104,7 @@ function scoreText(text = '') {
   return { S, P, hasSelf };
 }
 
-/* -------------------- A) /api/detect/banner -------------------- */
+/*/api/detect/banner  */
 router.post('/banner', async (req, res) => {
   try {
     const { url, images = [], threshold = 10 } = req.body || {};
@@ -147,7 +147,7 @@ router.post('/banner', async (req, res) => {
   }
 });
 
-/* -------------------- B) /api/detect/banner-file -------------------- */
+/* /api/detect/banner-file*/
 router.post('/banner-file', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ ok:false, message:'file 필드가 없습니다.' });
@@ -163,8 +163,8 @@ router.post('/banner-file', upload.single('file'), async (req, res) => {
   }
 });
 
-/* -------------------- C) /api/detect/from-page -------------------- */
-// 이미지 + 텍스트 동시 추출(일반 + 네이버 iframe)
+/* /api/detect/from-page */
+//이미지 + 텍스트 동시 추출(일반 + 네이버 iframe)
 async function extractFromPage(entryUrl) {
   const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124';
   const get = async (u) => {
@@ -178,11 +178,11 @@ async function extractFromPage(entryUrl) {
   const urls = [];
   let baseUrl = entryUrl;
 
-  // 1차 페이지
+  //1차 페이지
   let html = await get(entryUrl);
   let $ = cheerio.load(html, { decodeEntities:false });
 
-  // 네이버 블로그(iframe) 특례
+  //네이버 블로그
   const frame = $('frame#mainFrame, iframe#mainFrame').attr('src');
   if (frame) {
     const inner = absoluteUrl(entryUrl, frame);
@@ -193,10 +193,10 @@ async function extractFromPage(entryUrl) {
     }
   }
 
-  // 본문 텍스트
+  //본문 텍스트
   const text = $('body').text() || '';
 
-  // 이미지 수집
+  //이미지 수집
   $('img').each((_, el)=>{
     const src = $(el).attr('src') || $(el).attr('data-src') || '';
     const abs = absoluteUrl(baseUrl, src);
@@ -212,7 +212,7 @@ async function extractFromPage(entryUrl) {
     }
   });
 
-  // noscript 안의 img
+  //noscript 안의 img
   $('noscript').each((_, el)=>{
     const $n = cheerio.load($(el).html() || '');
     $n('img').each((__, img)=>{
@@ -222,13 +222,13 @@ async function extractFromPage(entryUrl) {
     });
   });
 
-  // og:image, link rel=image_src
+  //og:image, link rel=image_src
   const og = $('meta[property="og:image"]').attr('content');
   if (og) urls.push(absoluteUrl(baseUrl, og));
   const linkImg = $('link[rel="image_src"]').attr('href');
   if (linkImg) urls.push(absoluteUrl(baseUrl, linkImg));
 
-  // CSS background-image(url)
+  //CSS background-image(url)
   $('[style*="background"]').each((_, el)=>{
     const st = ($(el).attr('style')||'');
     const m = st.match(/url\((['"]?)(.*?)\1\)/i);
@@ -238,7 +238,7 @@ async function extractFromPage(entryUrl) {
     }
   });
 
-  // 후보 정리
+  //후보 정리
   const exts = /\.(png|jpe?g|webp|gif|bmp|svg)(\?|$)/i;
   const candidates = uniq(urls)
     .filter(u => exts.test(u) || /\/img\.php|image\.webp|bottomImgView/i.test(u))
@@ -248,7 +248,7 @@ async function extractFromPage(entryUrl) {
   return { candidates, text };
 }
 
-// 이미지 매칭
+//이미지 매칭
 async function matchOneImage(url, signs) {
   try {
     const resp = await axios.get(url, {
@@ -273,7 +273,7 @@ async function matchOneImage(url, signs) {
   } catch { return null; }
 }
 
-// 블로그 페이지 URL로 감지(요약만 반환)
+//블로그 페이지 URL로 감지(요약만 반환)
 router.post('/from-page', async (req, res) => {
   try {
     const pageUrl = req.body?.pageUrl || req.body?.url;
@@ -283,7 +283,7 @@ router.post('/from-page', async (req, res) => {
     const signs = loadSigns();
     if (!signs.length) return res.status(400).json({ ok:false, message:'signatures.json 비어있음' });
 
-    // ✅ 한 번만 호출해서 candidates + text 동시 확보
+    // 한 번만 호출해서 candidates + text 동시 확보
     const { candidates, text } = await extractFromPage(pageUrl);
     if (!candidates.length && !text) {
       return res.json({ ok:true, summary:{ label:'none' } });

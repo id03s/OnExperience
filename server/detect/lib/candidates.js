@@ -1,4 +1,5 @@
 // server/detect/lib/candidates.js
+//스폰서배너인식
 
 // 버튼/아이콘/작은 이미지 등 배너 후보 제외
 const BAD = [

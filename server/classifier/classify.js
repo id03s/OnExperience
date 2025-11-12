@@ -1,4 +1,4 @@
-// server/classifier/classify.js
+//서버/클래시퍼/클래시파이
 const { sponsored, selfPaid, negations } = require('./lexicons');
 
 function norm(text = '') {
@@ -30,10 +30,10 @@ function score(text) {
         const ev = { type, kw: kwRaw, index: idx, negated: neg };
 
         if (type === 'sponsored') {
-          if (neg) { scoreSelf += 1; ev.flip = true; }   // "협찬 아님" 같은 문맥
+          if (neg) { scoreSelf += 1; ev.flip = true; }   //협찬아님과 관련된 문맥
           else { scoreSponsored += 1; }
         } else { // self
-          if (neg) { scoreSponsored += 1; ev.flip = true; } // "내돈내산 아님" 같은 문맥
+          if (neg) { scoreSponsored += 1; ev.flip = true; } //내돈내산 아님과 관련된 문맥
           else { scoreSelf += 1; }
         }
 
@@ -49,21 +49,21 @@ function score(text) {
   return { scoreSponsored, scoreSelf, evidence };
 }
 
-// 결정 규칙: 협찬/내돈내산/모름
+//결정 규칙: 협찬/내돈내산/모름
 function decide({ scoreSponsored, scoreSelf }) {
   const diff = scoreSponsored - scoreSelf;
 
-  // 협찬 쪽 신호가 더 강하면 Sponsored
+  //키워드가 협찬같으면 협찬쪽으로
   if (diff >= 2) {
     return { label: 'Sponsored', confidence: Math.min(0.9, 0.6 + diff * 0.1) };
   }
 
-  // 내돈내산 키워드가 1회 이상이면 SelfPaid (횟수에 따라 confidence 상승)
+  //내돈내산 키워드가 1회 이상이면 내돈내산
   if (scoreSelf >= 1) {
     return { label: 'SelfPaid', confidence: Math.min(0.95, 0.6 + 0.1 * (scoreSelf - 1)) };
   }
 
-  // 둘 다 명확치 않으면 Unknown
+  //둘 다 명확치 않으면 Unknown
   return { label: 'Unknown', confidence: 0.5 };
 }
 

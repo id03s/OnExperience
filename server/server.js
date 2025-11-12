@@ -9,7 +9,7 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// ===== DB =====
+// 데베
 const DB_PATH = path.resolve(__dirname, 'database.sqlite');
 console.log('[DB]', DB_PATH);
 const db = new sqlite3.Database(DB_PATH);
@@ -31,11 +31,11 @@ db.serialize(() => {
     )
   `);
 
-  // ★ 기존 테이블에 siteName 없으면 추가(1회 마이그레이션)
+  // 기존 테이블에 siteName 없으면 추가
   db.all('PRAGMA table_info(reviews);', (err, cols) => {
     if (err) {
       console.warn('PRAGMA table_info 오류:', err.message);
-      return;
+      return베
     }
     const hasSiteName =
       Array.isArray(cols) && cols.some(c => String(c.name).toLowerCase() === 'sitename');
@@ -48,7 +48,7 @@ db.serialize(() => {
   });
 });
 
-// ===== 유틸 =====
+//유틸리티
 const sanitize = (x = {}) => ({
   siteName: String(x.siteName ?? '').trim(),
   place: String(x.place ?? '').trim(),
@@ -71,10 +71,10 @@ const INSERT_SQL = `
   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `;
 
-// ===== 공용 진단 =====
+//공용 진단
 app.get('/health', (_, res) => res.send('ok'));
 
-// ===== ✅ 엑셀 템플릿 강제 다운로드 =====
+// 엑셀 템플릿 강제 다운로드
 app.get('/api/template/reviews-bulk', (req, res) => {
   const filePath = path.join(__dirname, '../public/templates/reviews_bulk_template.xlsx');
 
@@ -82,7 +82,7 @@ app.get('/api/template/reviews-bulk', (req, res) => {
     return res.status(404).send('템플릿 파일이 존재하지 않습니다.');
   }
 
-  // ⭐ 핵심: 무조건 다운로드
+  // 핵심: 무조건 다운로드
   res.download(filePath, 'reviews_bulk_template.xlsx', (err) => {
     if (err) {
       console.error('파일 다운로드 오류:', err.message);
@@ -91,7 +91,7 @@ app.get('/api/template/reviews-bulk', (req, res) => {
   });
 });
 
-// ===== 리뷰 CRUD =====
+// 리뷰 CRUD
 // 목록
 app.get('/api/reviews', (req, res) => {
   db.all('SELECT * FROM reviews ORDER BY id DESC', (err, rows) => {
@@ -209,9 +209,9 @@ app.delete('/api/reviews/:id', (req, res) => {
   });
 });
 
-// ===== detect 라우트(중요: listen보다 위!) =====
+// detect 라우트(중요: listen보다 위임)
 app.use('/api/detect', require('./routes/detect'));
 
-// ===== 서버 시작 =====
+// 서버 시작
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`✅ API on http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(` API on http://localhost:${PORT}`));
